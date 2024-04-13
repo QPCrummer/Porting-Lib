@@ -102,6 +102,7 @@
   ],
   "client": [
     "client.AbstractClientPlayerMixin",
+    "client.AbstractContainerScreenMixin",
     "client.AbstractTextureMixin",
     "client.BlockColorsMixin",
     "client.BlockRenderDispatcherMixin",

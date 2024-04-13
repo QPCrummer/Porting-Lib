@@ -3,6 +3,7 @@ package io.github.fabricators_of_create.porting_lib.mixin.client;
 import java.util.List;
 import java.util.Optional;
 
+import io.github.fabricators_of_create.porting_lib.extensions.GuiGraphicsExtension;
 import net.minecraft.client.gui.GuiGraphics;
 
 import org.spongepowered.asm.mixin.Final;
@@ -34,7 +35,7 @@ import net.minecraft.world.item.ItemStack;
 
 @Environment(EnvType.CLIENT)
 @Mixin(GuiGraphics.class)
-public abstract class GuiGraphicsMixin {
+public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Shadow
 	@Final
 	private PoseStack pose;
@@ -47,6 +48,11 @@ public abstract class GuiGraphicsMixin {
 
 	@Unique
 	private ItemStack port_lib$cachedStack = ItemStack.EMPTY;
+
+	@Override
+	public void port_lib$setTooltipStack(final ItemStack stack) {
+		this.port_lib$cachedStack = stack;
+	}
 
 	@Inject(method = "renderTooltipInternal", at = @At(value = "INVOKE", target = "Ljava/util/List;isEmpty()Z", shift = At.Shift.AFTER), cancellable = true)
 	private void port_lib$preTooltipRender(Font font, List<ClientTooltipComponent> components, int x, int y, ClientTooltipPositioner clientTooltipPositioner, CallbackInfo ci) {
