@@ -62,6 +62,7 @@ public abstract class LivingEntityMixin extends Entity implements EntityExtensio
 	public abstract int getUseItemRemainingTicks();
 
 	private int port_lib$lootingLevel;
+	private ItemStack port_lib$oldUseItem;
 
 	public LivingEntityMixin(EntityType<?> variant, Level world) {
 		super(variant, world);
@@ -170,10 +171,16 @@ public abstract class LivingEntityMixin extends Entity implements EntityExtensio
 		new LivingEntityEvents.LivingJumpEvent((LivingEntity) (Object) this).sendEvent();
 	}
 
+	@Inject(method = "completeUsingItem", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;finishUsingItem(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraft/world/item/ItemStack;"),
+			locals = LocalCapture.CAPTURE_FAILHARD)
+	public void port_lib$beforeFinishUsing(CallbackInfo ci, InteractionHand hand) {
+		port_lib$oldUseItem = this.getUseItem().copy();
+	}
+
 	@Inject(method = "completeUsingItem", at = @At(value = "INVOKE", shift = At.Shift.BY, by = 2, target = "Lnet/minecraft/world/item/ItemStack;finishUsingItem(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/LivingEntity;)Lnet/minecraft/world/item/ItemStack;"),
 			locals = LocalCapture.CAPTURE_FAILHARD)
 	public void port_lib$onFinishUsing(CallbackInfo ci, InteractionHand hand, ItemStack result) {
-		LivingEntityUseItemEvents.LIVING_USE_ITEM_FINISH.invoker().onUseItem((LivingEntity) (Object) this, this.getUseItem().copy(), getUseItemRemainingTicks(), result);
+		LivingEntityUseItemEvents.LIVING_USE_ITEM_FINISH.invoker().onUseItem((LivingEntity) (Object) this, port_lib$oldUseItem, getUseItemRemainingTicks(), result);
 	}
 
 	@Inject(method = "hurt", at = @At("HEAD"), cancellable = true)
