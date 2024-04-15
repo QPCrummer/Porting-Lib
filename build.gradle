@@ -60,6 +60,7 @@ allprojects {
 	if (name == "buildSrc") return
 
 	apply plugin: "fabric-loom"
+	apply plugin: "maven-publish"
 	apply plugin: PortingLibBuildPlugin
 
 	group = "io.github.fabricators_of_create.Porting-Lib"
@@ -152,10 +153,32 @@ allprojects {
 	}
 
 	jar.from(rootProject.file("LICENSE")) // copy license file into jar
+
+	publishing {
+		repositories {
+			maven {
+				name = "devOS"
+				String mavenType = System.getenv("RELEASE") == "true" ? "releases" : "snapshots"
+				url = "https://mvn.devos.one/$mavenType/"
+				credentials {
+					username = System.getenv("MAVEN_USER")
+					password = System.getenv("MAVEN_PASS")
+				}
+				authentication {
+					register("basic", BasicAuthentication)
+				}
+			}
+		}
+
+		publications {
+			register("mavenJava", MavenPublication) {
+				from((SoftwareComponent) components["java"])
+			}
+		}
+	}
 }
 
 subprojects {
-	apply plugin: "maven-publish"
 
 	archivesBaseName = "porting_lib_" + name
 
@@ -199,27 +222,4 @@ subprojects {
 	}
 
 	java.withSourcesJar()
-
-	publishing {
-		repositories {
-			maven {
-				name = "devOS"
-				String mavenType = System.getenv("RELEASE") == "true" ? "releases" : "snapshots"
-				url = "https://mvn.devos.one/$mavenType/"
-				credentials {
-					username = System.getenv("MAVEN_USER")
-					password = System.getenv("MAVEN_PASS")
-				}
-				authentication {
-					register("basic", BasicAuthentication)
-				}
-			}
-		}
-
-		publications {
-			register("mavenJava", MavenPublication) {
-				from((SoftwareComponent) components["java"])
-			}
-		}
-	}
 }
